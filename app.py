@@ -1,0 +1,179 @@
+import streamlit as st
+import pandas as pd
+import os
+
+# ---------------- PAGE SETTINGS ----------------
+st.set_page_config(
+    page_title="FutureColor Bot - Computer Expo",
+    page_icon="🎉",
+    layout="centered"
+)
+
+CSV_FILE = "futurecolor_cloud.csv"
+ADMIN_PASSWORD = "amrita123@"   # <-- change if you want
+
+# ---------------- CREATE CSV IF NOT EXISTS ----------------
+if not os.path.exists(CSV_FILE):
+    df = pd.DataFrame(columns=["Name", "Age", "City", "Favorite Color", "Message"])
+    df.to_csv(CSV_FILE, index=False)
+
+# ---------------- SESSION STATE FOR PAGE NAVIGATION ----------------
+if "page" not in st.session_state:
+    st.session_state.page = "home"
+
+def go_home():
+    st.session_state.page = "home"
+
+def go_form():
+    st.session_state.page = "form"
+
+# ---------------- CUSTOM CSS ----------------
+st.markdown("""
+<style>
+body {
+    background: linear-gradient(135deg, #ffe9d6, #fff4e3, #fbe4c2);
+    background-size: cover;
+}
+
+.header-box {
+    background: rgba(255,255,255,0.92);
+    padding: 28px;
+    border-radius: 25px;
+    box-shadow: 0px 6px 18px rgba(0,0,0,0.22);
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.top-image {
+    width: 200px;
+    margin-bottom: 10px;
+    border-radius: 20px;
+}
+
+.robot-image {
+    width: 120px;
+    margin-top: -15px;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# Fun, kid-friendly images from the internet
+fun_image = "https://yt3.ggpht.com/ytc/AIdro_lNE9F1qUp8GvAxWoWy67enscUnKgwEB5Rj00Fm35aa-w=s800-c-k-c0x00ffffff-no-rw"
+robot_image = "https://cdn-icons-png.flaticon.com/512/4712/4712100.png"
+
+# ---------------- FUTURE MESSAGES ----------------
+messages = {
+    "Red": (
+        "🔥 You are bold, passionate, and full of unstoppable energy! "
+        "Your future holds adventures, leadership, and powerful achievements."
+    ),
+    "Blue": (
+        "🌊 Calm, intelligent, peaceful — your mind is your superpower! "
+        "Great success in academics and creativity awaits you."
+    ),
+    "Green": (
+        "🌿 Kind-hearted and caring — you bring harmony wherever you go. "
+        "Your future will touch lives and inspire positivity."
+    ),
+    "Yellow": (
+        "🌟 Bright, cheerful, creative — you make every place better! "
+        "A fun, imaginative, and successful journey lies ahead."
+    ),
+    "Purple": (
+        "🔮 Unique and imaginative — your ideas can change the world. "
+        "Your future is full of innovation and brilliance."
+    ),
+    "Pink": (
+        "💖 Loving and joyful — people feel happy around you. "
+        "Your future will be full of friendships and heartwarming moments."
+    ),
+    "Black": (
+        "⚫ Strong, focused, determined — you never give up! "
+        "A powerful and successful path is waiting for you."
+    ),
+    "White": (
+        "🤍 Pure, calm, peaceful — you bring comfort and clarity. "
+        "A serene, graceful, and inspiring journey awaits."
+    ),
+}
+
+# ---------------- HOME PAGE ----------------
+if st.session_state.page == "home":
+
+    st.markdown(f"""
+    <div class="header-box">
+        <img src="{fun_image}" class="top-image">
+        <h1 style="color:#8A2BE2; font-weight:900;">Welcome to the Computer Expo 2025 🎉</h1>
+        <h2 style="color:#FF1493;">Amrita Vidyalayam, Kovur</h2>
+        <h4 style="color:#333;">A Creative Project by V. Madhavan and Siddarth, 7A 💻✨</h4>
+        <img src="{robot_image}" class="robot-image">
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.write("")
+    st.success("✨ Ready to discover your colourful future?")
+    if st.button("🚀 Start Now"):
+        go_form()
+
+# ---------------- FORM PAGE ----------------
+if st.session_state.page == "form":
+
+    st.header("🎨 Discover Your Colorful Future!")
+
+    name = st.text_input("👤 Your Name")
+    age = st.number_input("🎂 Your Age", min_value=1, max_value=100)
+    city = st.text_input("🏙️ Your City")
+    color = st.selectbox(
+        "🎨 Your Favourite Color",
+        ["Red", "Blue", "Green", "Yellow", "Purple", "Pink", "Black", "White"]
+    )
+
+    if st.button("✨ Reveal My Future"):
+        if name == "" or city == "":
+            st.error("Please fill all fields!")
+        else:
+            msg = messages[color]
+            st.success(f"Hi **{name}**, here is your colourful future:")
+            st.info(msg)
+
+            df = pd.read_csv(CSV_FILE)
+            new_row = {
+                "Name": name,
+                "Age": age,
+                "City": city,
+                "Favorite Color": color,
+                "Message": msg
+            }
+            df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+            df.to_csv(CSV_FILE, index=False)
+
+            st.success("Your response has been saved! 📘")
+
+    if st.button("🏠 Back to Home"):
+        go_home()
+
+# ---------------- ADMIN PANEL ----------------
+st.write("---")
+st.header("🔒 Admin Access Only")
+
+admin_pw = st.text_input("Enter admin password:", type="password")
+
+if st.button("🔐 Login"):
+    if admin_pw == ADMIN_PASSWORD:
+        st.success("Admin login successful!")
+
+        df = pd.read_csv(CSV_FILE)
+        st.dataframe(df)
+
+        st.download_button(
+            label="📥 Download CSV Data",
+            data=df.to_csv(index=False),
+            file_name="futurecolor_data.csv",
+            mime="text/csv",
+        )
+    else:
+        st.error("❌ Incorrect password")
+
+# ---------------- FOOTER ----------------
+st.write("---")
+st.caption("© 2025 • Computer Expo • Amrita Vidyalayam • Made with ❤️ by Grade 7 Students")
