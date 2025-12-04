@@ -54,6 +54,38 @@ body {
     width: 120px;
     margin-top: -15px;
 }
+
+/* Certificate style */
+.certificate-box {
+    background: #fffdf5;
+    border: 3px solid #f4c542;
+    border-radius: 20px;
+    padding: 20px;
+    margin-top: 20px;
+    box-shadow: 0px 6px 18px rgba(0,0,0,0.15);
+    text-align: center;
+}
+
+.certificate-title {
+    font-size: 26px;
+    font-weight: 800;
+    color: #d48806;
+    margin-bottom: 5px;
+}
+
+.certificate-name {
+    font-size: 22px;
+    font-weight: 700;
+    color: #8A2BE2;
+    margin: 8px 0;
+}
+
+.certificate-text {
+    font-size: 16px;
+    color: #333;
+    margin-top: 5px;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -97,7 +129,9 @@ messages = {
     ),
 }
 
-# ---------------- HOME PAGE ----------------
+# =========================================================
+#                     HOME PAGE
+# =========================================================
 if st.session_state.page == "home":
 
     st.markdown(f"""
@@ -115,7 +149,9 @@ if st.session_state.page == "home":
     if st.button("🚀 Start Now"):
         go_form()
 
-# ---------------- FORM PAGE ----------------
+# =========================================================
+#                     FORM PAGE
+# =========================================================
 if st.session_state.page == "form":
 
     st.header("🎨 Discover Your Colorful Future!")
@@ -136,6 +172,7 @@ if st.session_state.page == "form":
             st.success(f"Hi **{name}**, here is your colourful future:")
             st.info(msg)
 
+            # Save to CSV
             df = pd.read_csv(CSV_FILE)
             new_row = {
                 "Name": name,
@@ -149,10 +186,32 @@ if st.session_state.page == "form":
 
             st.success("Your response has been saved! 📘")
 
+            # --------- SIMPLE CERTIFICATE DISPLAY ---------
+            cert_html = f"""
+            <div class="certificate-box">
+                <div class="certificate-title">Certificate of Colourful Future ✨</div>
+                <div class="certificate-text">This is to celebrate</div>
+                <div class="certificate-name">{name}</div>
+                <div class="certificate-text">
+                    from {city}, who chose the colour <b>{color}</b>.<br>
+                    According to the FutureColor Bot, your future is:
+                </div>
+                <div class="certificate-text" style="margin-top:10px;">
+                    <i>{msg}</i>
+                </div>
+                <div class="certificate-text" style="margin-top:12px; font-size:14px; color:#777;">
+                    Show this screen to your teacher or take a screenshot 📸 to keep it!
+                </div>
+            </div>
+            """
+            st.markdown(cert_html, unsafe_allow_html=True)
+
     if st.button("🏠 Back to Home"):
         go_home()
 
-# ---------------- ADMIN PANEL ----------------
+# =========================================================
+#                     ADMIN PANEL
+# =========================================================
 st.write("---")
 st.header("🔒 Admin Access Only")
 
@@ -163,10 +222,24 @@ if st.button("🔐 Login"):
         st.success("Admin login successful!")
 
         df = pd.read_csv(CSV_FILE)
+        st.write("### 👀 All Responses")
         st.dataframe(df)
 
+        # --------- COLOR POPULARITY CHART ---------
+        if not df.empty:
+            st.write("### 📊 Popular Colours")
+            color_counts = df["Favorite Color"].value_counts().reindex(
+                ["Red", "Blue", "Green", "Yellow", "Purple", "Pink", "Black", "White"],
+                fill_value=0
+            )
+            st.bar_chart(color_counts)
+        else:
+            st.info("No data yet to show chart.")
+
+        # Download CSV
+        st.write("### 📥 Download Data")
         st.download_button(
-            label="📥 Download CSV Data",
+            label="Download CSV Data",
             data=df.to_csv(index=False),
             file_name="futurecolor_data.csv",
             mime="text/csv",
@@ -174,6 +247,8 @@ if st.button("🔐 Login"):
     else:
         st.error("❌ Incorrect password")
 
-# ---------------- FOOTER ----------------
+# =========================================================
+#                     FOOTER
+# =========================================================
 st.write("---")
 st.caption("© 2025 • Computer Expo • Amrita Vidyalayam • Made with ❤️ by Grade 7 Students")
