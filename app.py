@@ -139,7 +139,7 @@ if st.session_state.page == "home":
         <img src="{fun_image}" class="top-image">
         <h1 style="color:#8A2BE2; font-weight:900;">Welcome to the Computer Expo 2025 🎉</h1>
         <h2 style="color:#FF1493;">Amrita Vidyalayam, Kovur</h2>
-        <h4 style="color:#333;">A Creative Project by V. Madhavan and Siddarth, 7A 💻✨</h4>
+        <h4 style="color:#333;">A Creative Project by V. Madhavan and D. Siddarth, 7A 💻✨</h4>
         <img src="{robot_image}" class="robot-image">
     </div>
     """, unsafe_allow_html=True)
@@ -200,7 +200,7 @@ if st.session_state.page == "form":
                     <i>{msg}</i>
                 </div>
                 <div class="certificate-text" style="margin-top:12px; font-size:14px; color:#777;">
-                    Show this screen to your teacher or take a screenshot 📸 to keep it!
+                    Take a screenshot 📸 to keep it!
                 </div>
             </div>
             """
