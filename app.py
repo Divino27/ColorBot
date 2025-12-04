@@ -1,6 +1,9 @@
 import streamlit as st
 import pandas as pd
 import os
+from io import BytesIO
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
 
 # ---------------- PAGE SETTINGS ----------------
 st.set_page_config(
@@ -85,7 +88,6 @@ body {
     color: #333;
     margin-top: 5px;
 }
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -139,7 +141,7 @@ if st.session_state.page == "home":
         <img src="{fun_image}" class="top-image">
         <h1 style="color:#8A2BE2; font-weight:900;">Welcome to the Computer Expo 2025 🎉</h1>
         <h2 style="color:#FF1493;">Amrita Vidyalayam, Kovur</h2>
-        <h4 style="color:#333;">A Creative Project by V. Madhavan and D. Siddarth, 7A 💻✨</h4>
+        <h4 style="color:#333;">A Creative Project by V. Madhavan and Siddarth, 7A 💻✨</h4>
         <img src="{robot_image}" class="robot-image">
     </div>
     """, unsafe_allow_html=True)
@@ -164,6 +166,8 @@ if st.session_state.page == "form":
         ["Red", "Blue", "Green", "Yellow", "Purple", "Pink", "Black", "White"]
     )
 
+    cert_pdf_bytes = None  # will hold PDF bytes for download
+
     if st.button("✨ Reveal My Future"):
         if name == "" or city == "":
             st.error("Please fill all fields!")
@@ -186,7 +190,7 @@ if st.session_state.page == "form":
 
             st.success("Your response has been saved! 📘")
 
-            # --------- SIMPLE CERTIFICATE DISPLAY ---------
+            # --------- SIMPLE CERTIFICATE DISPLAY (ON SCREEN) ---------
             cert_html = f"""
             <div class="certificate-box">
                 <div class="certificate-title">Certificate of Colourful Future ✨</div>
@@ -200,11 +204,53 @@ if st.session_state.page == "form":
                     <i>{msg}</i>
                 </div>
                 <div class="certificate-text" style="margin-top:12px; font-size:14px; color:#777;">
-                    Take a screenshot 📸 to keep it!
+                    You can download this certificate below or take a screenshot 📸 to keep it!
                 </div>
             </div>
             """
             st.markdown(cert_html, unsafe_allow_html=True)
+
+            # --------- GENERATE PDF CERTIFICATE IN MEMORY ---------
+            buffer = BytesIO()
+            c = canvas.Canvas(buffer, pagesize=A4)
+            width, height = A4
+
+            # Title
+            c.setFont("Helvetica-Bold", 24)
+            c.drawCentredString(width / 2, height - 100, "Certificate of Colourful Future")
+
+            # Name
+            c.setFont("Helvetica-Bold", 18)
+            c.drawCentredString(width / 2, height - 150, f"Awarded to: {name}")
+
+            # City & Color
+            c.setFont("Helvetica", 14)
+            c.drawCentredString(width / 2, height - 180, f"From: {city}")
+            c.drawCentredString(width / 2, height - 205, f"Favourite Colour: {color}")
+
+            # Message (wrap roughly into multiple lines)
+            c.setFont("Helvetica-Oblique", 12)
+            text_obj = c.beginText(80, height - 250)
+            for line in msg.split(". "):
+                text_obj.textLine(line.strip())
+            c.drawText(text_obj)
+
+            # Footer line
+            c.setFont("Helvetica", 10)
+            c.drawCentredString(width / 2, 80, "Generated at the Computer Expo 2025 - Amrita Vidyalayam, Kovur")
+
+            c.showPage()
+            c.save()
+            buffer.seek(0)
+            cert_pdf_bytes = buffer.getvalue()
+
+            # Download button for this student's certificate
+            st.download_button(
+                label="📄 Download Your Certificate (PDF)",
+                data=cert_pdf_bytes,
+                file_name=f"{name.replace(' ', '_')}_FutureColor_Certificate.pdf",
+                mime="application/pdf",
+            )
 
     if st.button("🏠 Back to Home"):
         go_home()
